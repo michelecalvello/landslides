@@ -78,6 +78,7 @@ button.primary:hover{background:#18405f}
     <h1>Frane in Italia, 2010–2024</h1>
     <p class="sub">Catalogo FraneItalia con la zonazione delle zone di allerta</p>
 
+    <div id="tilewarn" class="hint" style="display:none;color:#b9770e;margin:0 0 10px">Le mappe di base non si caricano. Scegline un'altra (in alto a destra sulla mappa) o controlla la connessione.</div>
     <div class="big"><b id="nShown">–</b><span id="nTotal"></span></div>
     <div class="hint" id="nHint"></div>
 
@@ -232,13 +233,28 @@ rebuildZoneSelect();
 
 /* ---------- mappa ---------- */
 const map=L.map('map',{zoomControl:true,preferCanvas:false,minZoom:5,maxZoom:18});
-const base={
-  'Mappa chiara':L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'}),
-  'OpenStreetMap':L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}),
-  'Rilievo (OpenTopoMap)':L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{subdomains:'abc',maxZoom:17,attribution:'&copy; OpenStreetMap, SRTM | &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)'})
+// Stesse 8 mappe di base usate in landslides_blogpetleyall.html
+const esri=(svc,extra,maxNative)=>L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/'+svc+'/MapServer/tile/{z}/{y}/{x}',
+  {attribution:'Tiles &copy; Esri '+extra,maxNativeZoom:maxNative,maxZoom:18});
+const BASE={
+  'Esri World Street Map':esri('World_Street_Map','&mdash; Source: Esri, HERE, Garmin, OpenStreetMap contributors',17),
+  'Esri Satellite':esri('World_Imagery','&mdash; Source: Esri, Maxar, Earthstar Geographics',18),
+  'Esri Topographic':esri('World_Topo_Map','&mdash; Source: Esri, HERE, Garmin, USGS, NGA',17),
+  'Esri Shaded Relief':esri('World_Shaded_Relief','&mdash; Source: Esri, USGS, NOAA',13),
+  'OpenStreetMap':L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxNativeZoom:19,maxZoom:19}),
+  'OpenTopoMap':L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors, SRTM | OpenTopoMap (CC-BY-SA)',subdomains:'abc',maxNativeZoom:17,maxZoom:18}),
+  'Esri Light Gray':esri('Canvas/World_Light_Gray_Base','&mdash; Source: Esri, HERE, Garmin',16),
+  'Esri Dark Gray':esri('Canvas/World_Dark_Gray_Base','&mdash; Source: Esri, HERE, Garmin',16)
 };
-base['Mappa chiara'].addTo(map);
-L.control.layers(base,null,{position:'topright',collapsed:true}).addTo(map);
+let savedBase=null;
+try{savedBase=localStorage.getItem('franeitalia-basemap')}catch(e){}
+const baseName=(savedBase&&BASE[savedBase])?savedBase:'Esri World Street Map';
+BASE[baseName].addTo(map);
+L.control.layers(BASE,null,{position:'topright',collapsed:window.innerWidth<860}).addTo(map);
+map.on('baselayerchange',e=>{try{localStorage.setItem('franeitalia-basemap',e.name)}catch(err){}});
+// se i tile non si caricano (rete bloccata, regole sul referrer) suggerisce di scegliere un'altra mappa
+let tileErrors=0;
+Object.values(BASE).forEach(l=>l.on('tileerror',()=>{ if(++tileErrors===8){const n=document.getElementById('tilewarn'); if(n) n.style.display='block'} }));
 L.control.scale({imperial:false}).addTo(map);
 map.fitBounds([[36.4,6.8],[47.1,18.6]]);
 
