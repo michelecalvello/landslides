@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Esporta il catalogo quotidiano delle frane in aggiornamentoFraneItalia.json.
+"""Esporta il catalogo quotidiano delle frane in franeaggiornamentoquotidiano.json.
 
 Uso:
     python3 scripts/esporta_catalogo.py CARTELLA_JSON [FILE_USCITA]
@@ -8,7 +8,7 @@ CARTELLA_JSON contiene un file .json per ogni notizia del catalogo, con i campi
 url, titolo, data_pubblicazione, luoghi, effetti, classe_conseguenze,
 numero_frane, data_frana, ora_frana, accuratezza_temporale, lat, lon,
 accuratezza_spaziale e inserito_il. FILE_USCITA vale per default
-aggiornamentoFraneItalia.json nella radice del repository.
+franeaggiornamentoquotidiano.json nella radice del repository.
 """
 import datetime
 import glob
@@ -46,7 +46,7 @@ def main():
         sys.exit(__doc__)
     cartella = sys.argv[1]
     radice = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    uscita = sys.argv[2] if len(sys.argv) > 2 else os.path.join(radice, "aggiornamentoFraneItalia.json")
+    uscita = sys.argv[2] if len(sys.argv) > 2 else os.path.join(radice, "franeaggiornamentoquotidiano.json")
     file = sorted(glob.glob(os.path.join(cartella, "**", "*.json"), recursive=True))
     frane, visti = [], set()
     for f in file:

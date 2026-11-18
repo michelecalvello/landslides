@@ -144,7 +144,7 @@ a.btn:hover{background:#f1f4f8}
     <div class="hint">Il colore e i conteggi delle zone seguono i filtri attivi (tranne il filtro sulla zona).</div>
 
     <h2>Dati</h2>
-    <div class="row"><button id="csv" class="primary">Scarica CSV</button><a class="btn" href="aggiornamentoFraneItalia.json" target="_blank" rel="noopener">JSON</a></div>
+    <div class="row"><button id="csv" class="primary">Scarica CSV</button><a class="btn" href="franeaggiornamentoquotidiano.json" target="_blank" rel="noopener">JSON</a></div>
     <div class="hint">Il CSV contiene le notizie selezionate dai filtri attivi.</div>
 
     <div class="credits">
@@ -201,11 +201,11 @@ const PROV={'Autonomous Province of Bolzano':'Bolzano','Autonomous Province of T
 /* ---------- dati ---------- */
 let payload;
 try{
-  const res=await fetch('aggiornamentoFraneItalia.json?t='+Date.now(),{cache:'no-store'});
+  const res=await fetch('franeaggiornamentoquotidiano.json?t='+Date.now(),{cache:'no-store'});
   if(!res.ok) throw new Error('HTTP '+res.status);
   payload=await res.json();
 }catch(err){
-  $('#loading').textContent='Non riesco a caricare i dati (aggiornamentoFraneItalia.json). Apri la pagina dal sito web, non come file locale, e riprova.';
+  $('#loading').textContent='Non riesco a caricare i dati (franeaggiornamentoquotidiano.json). Apri la pagina dal sito web, non come file locale, e riprova.';
   return;
 }
 const events=(payload.frane||[]).filter(e=>isFinite(e.lat)&&isFinite(e.lon));
@@ -536,7 +536,7 @@ $('#csv').addEventListener('click',()=>{
   const rows=lastShown.slice().sort((a,b)=>b.data_pubblicazione.localeCompare(a.data_pubblicazione)).map(e=>cols.map(k=>cell(k==='regione'?e.rg:k==='zona_allerta'?(e.z||''):e[k])).join(','));
   const blob=new Blob(['﻿'+head.join(',')+'\n'+rows.join('\n')+'\n'],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='aggiornamentoFraneItalia_'+(payload.aggiornato||'').slice(0,10)+'.csv';
+  a.download='franeaggiornamentoquotidiano_'+(payload.aggiornato||'').slice(0,10)+'.csv';
   document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);
 });
 
